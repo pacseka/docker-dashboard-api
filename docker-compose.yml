@@ -1,0 +1,18 @@
+version: '3.4'
+
+services:
+  docker-dashboard-api:
+    image: docker.hvg.hu/hvg/docker-dashboard/docker-dashboard-api:latest
+    environment:
+      ASPNETCORE_ENVIRONMENT: 'Development'
+      SWARM_URL: "http://172.16.197.41:2375"
+    ports:
+      - "6099:80"
+    build:
+      context: .
+      dockerfile: DockerDashboard.Api/Dockerfile
+
+networks:
+  default:
+    external: true
+    name: shared-infrastructure-network
