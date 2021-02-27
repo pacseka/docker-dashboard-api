@@ -1,8 +1,13 @@
+using System;
+using System.Net.Http.Headers;
+using System.Text;
+using DockerDashboard.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Options;
 
 namespace DockerDashboard.Api
 {
@@ -18,17 +23,28 @@ namespace DockerDashboard.Api
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSpaStaticFiles(configuration: options => { options.RootPath = "wwwroot"; });
+            services.AddSpaStaticFiles(options => { options.RootPath = "wwwroot"; });
             services.AddControllers();
             services.AddCors(options =>
             {
-                options.AddPolicy("VueCorsPolicy", builder =>
+                options.AddPolicy("CorsPolicy", builder =>
                 {
                     builder
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowAnyOrigin();
                 });
+            });
+
+            services.AddHttpClient<IDockerRegistryProxy, DockerRegistryProxy>(client =>
+            {
+                var dockerPwd = Configuration["dockerregistrysecrets"];
+                var dockerUser = Configuration["Settings:DockerRegistryUser"];
+                var authToken = Encoding.ASCII.GetBytes($"{dockerUser}:{dockerPwd}");
+
+                client.BaseAddress = new Uri(Configuration["Settings:DockerRegistryUrl"]);
+                client.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Basic", Convert.ToBase64String(authToken));
             });
 
             services.AddControllers();
@@ -50,7 +66,7 @@ namespace DockerDashboard.Api
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
             app.UseSpaStaticFiles();
-            app.UseSpa(configuration: builder =>
+            app.UseSpa(builder =>
             {
                 if (env.IsDevelopment())
                 {

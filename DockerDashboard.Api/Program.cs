@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 
 namespace DockerDashboard.Api
@@ -15,6 +16,11 @@ namespace DockerDashboard.Api
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseStartup<Startup>();
+                })
+                .ConfigureAppConfiguration((_, config) =>
+                {
+                    config.AddEnvironmentVariables();
+                    config.AddKeyPerFile("/run/secrets/", false);
                 });
     }
 }

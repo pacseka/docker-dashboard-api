@@ -1,16 +1,22 @@
-version: '3.4'
+version: '3.5'
 
 services:
   docker-dashboard-api:
     image: docker.hvg.hu/hvg/docker-dashboard/docker-dashboard-api:latest
+    secrets:
+      - dockerregistrysecrets
     environment:
       ASPNETCORE_ENVIRONMENT: 'Development'
-      SWARM_URL: "http://172.16.197.41:2375"
+      Settings_SwarmUrl: "http://172.16.197.41:2375"
     ports:
       - "6099:80"
     build:
       context: .
       dockerfile: DockerDashboard.Api/Dockerfile
+
+secrets:
+  dockerregistrysecrets:
+    file: ../secrets/docker_registry_pwd.txt
 
 networks:
   default:
