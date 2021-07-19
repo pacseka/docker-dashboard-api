@@ -8,13 +8,11 @@
   "$schema": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json",
   "settings": {
     "documentationRules": {
-      "companyName": "HVG Kiadó Zrt",
       "documentInternalElements": false,
       "documentExposedElements": false,
       "documentInterfaces": false,
       "xmlHeader": false
     },
-    "orderingRules": { "usingDirectivesPlacement": "outsideNamespace" },
-    
+    "orderingRules": { "usingDirectivesPlacement": "outsideNamespace" }
   }
 }
