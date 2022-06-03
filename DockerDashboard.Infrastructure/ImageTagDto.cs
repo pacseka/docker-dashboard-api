@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace DockerDashboard.Infrastructure
+namespace DockerDashboard.Infrastructure;
+
+public class ImageTagDto
 {
-    public class ImageTagDto
-    {
-        public List<string> Tags { get; set; }
-    }
+    public List<string> Tags { get; set; }
 }

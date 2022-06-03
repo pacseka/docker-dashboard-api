@@ -1,104 +1,83 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Mime;
 using System.Threading.Tasks;
 using Docker.DotNet;
 using Docker.DotNet.Models;
+using DockerDashboard.Infrastructure;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
-namespace DockerDashboard.Api.Controllers
+namespace DockerDashboard.Api.Controllers;
+
+[ApiController]
+[Produces(MediaTypeNames.Application.Json)]
+[Consumes(MediaTypeNames.Application.Json)]
+[Route("api/services")]
+public class ServicesController : ControllerBase
 {
-    [ApiController]
-    [Route("api/[controller]")]
-    public class ServicesController : ControllerBase
+    private readonly ILogger<ServicesController> _logger;
+    private readonly Uri _swarmUrl;
+
+    public ServicesController(ILogger<ServicesController> logger, IOptions<AppConfiguration> options)
     {
-        private readonly ILogger<ServicesController> _logger;
-        private readonly Uri _swarmUrl;
+        _logger = logger;
+        _swarmUrl = options.Value.SwarmUrl;
+    }
 
-        public ServicesController(ILogger<ServicesController> logger)
+    [HttpGet]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<ActionResult<List<SwarmServiceDto>>> GetServicesAsync()
+    {
+        List<SwarmService> services;
+
+        try
         {
-            _logger = logger;
-            _swarmUrl = new Uri(Environment.GetEnvironmentVariable("SWARM_URL") ?? string.Empty);
+            using var dockerClientConfiguration =
+                new DockerClientConfiguration(_swarmUrl, defaultTimeout: TimeSpan.FromSeconds(10));
+            using var dockerClient = dockerClientConfiguration.CreateClient();
+            services = (await dockerClient.Swarm.ListServicesAsync().ConfigureAwait(false)).ToList();
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Hiba a swarm megszólításakor!");
+            throw;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetServices([FromQuery] ServiceFilter filter)
+        var serviceWithEndpoints = services.Where(x => x.Endpoint.Ports != null).ToList();
+
+        var result = new List<SwarmServiceDto>();
+
+        foreach (var service in serviceWithEndpoints)
         {
-            List<SwarmService> services;
+            var port = service.Endpoint.Ports.FirstOrDefault();
 
-            try
+            result.Add(new SwarmServiceDto
             {
-                using var dockerClientConfiguration =
-                    new DockerClientConfiguration(_swarmUrl, defaultTimeout: TimeSpan.FromSeconds(10));
-                using var dockerClient = dockerClientConfiguration.CreateClient();
-                services = (await dockerClient.Swarm.ListServicesAsync().ConfigureAwait(false)).ToList();
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError(exception, "Hiba a swarm megszólításakor!");
-                throw;
-            }
-
-            var serviceWithEndpoints = services.Where(x => x.Endpoint.Ports != null).ToList();
-
-            var result = new List<SwarmServiceDto>();
-
-            foreach (var service in serviceWithEndpoints)
-            {
-                var swagger = service
-                    .Spec
-                    .TaskTemplate?
-                    .ContainerSpec?
-                    .Env?
-                    .FirstOrDefault(x => x.StartsWith("SWAGGER_SERVER", StringComparison.InvariantCultureIgnoreCase));
-
-                if (string.IsNullOrEmpty(swagger) && filter?.SwaggerExists == true)
-                {
-                    continue;
-                }
-
-                if (string.IsNullOrEmpty(swagger) && filter?.SwaggerExists == false)
-                {
-                    result.Add(new SwarmServiceDto
-                    {
-                        Name = service.Spec.Name,
-                        Ports = service.Endpoint.Ports,
-                    });
-
-                    continue;
-                }
-
-                result.Add(new SwarmServiceDto
-                {
-                    Name = service.Spec.Name,
-                    Ports = service.Endpoint.Ports,
-                    SwaggerUrl = CreateSwaggerUri(swagger ?? string.Empty)
-                });
-            }
-
-            return Ok(result);
+                Name = service.Spec.Name,
+                Ports = service.Endpoint.Ports,
+                SwaggerUrl = CreateSwaggerUri(port)
+            });
         }
 
-#nullable enable
-        private static Uri? CreateSwaggerUri(string url)
-#nullable disable
+        return Ok(result);
+    }
+
+    private Uri CreateSwaggerUri(PortConfig port)
+    {
+        if (port == null)
         {
-            var swaggerUrl = url
-                .Replace("SWAGGER_SERVER:", string.Empty, StringComparison.InvariantCultureIgnoreCase)
-                .Replace("SWAGGER_SERVER=", string.Empty, StringComparison.InvariantCultureIgnoreCase)
-                .Trim()
-                .TrimEnd('/');
-
-            swaggerUrl = $"{swaggerUrl}/swagger";
-
-            if (!swaggerUrl.StartsWith("http", StringComparison.CurrentCultureIgnoreCase))
-            {
-                swaggerUrl = $"http://{swaggerUrl}";
-            }
-
-            Uri.TryCreate(swaggerUrl, UriKind.Absolute, out var parsedUri);
-            return parsedUri;
+            return null;
         }
+
+        var uriBuilder = new UriBuilder(_swarmUrl.AbsoluteUri)
+        {
+            Port = (int)port.PublishedPort,
+            Path = "swagger"
+        };
+        return uriBuilder.Uri;
     }
 }

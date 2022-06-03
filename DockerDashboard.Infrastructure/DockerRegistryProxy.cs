@@ -2,39 +2,38 @@
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace DockerDashboard.Infrastructure
+namespace DockerDashboard.Infrastructure;
+
+public class DockerRegistryProxy : IDockerRegistryProxy
 {
-    public class DockerRegistryProxy : IDockerRegistryProxy
+    private readonly HttpClient _httpClient;
+
+    public DockerRegistryProxy(HttpClient httpClient)
     {
-        private readonly HttpClient _httpClient;
+        _httpClient = httpClient;
+    }
 
-        public DockerRegistryProxy(HttpClient httpClient)
+    public async Task<ImageRepositoryDto> GetImageRepositoriesAsync()
+    {
+        var result = await _httpClient.GetAsync("_catalog").ConfigureAwait(false);
+
+        var json = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+        return JsonSerializer.Deserialize<ImageRepositoryDto>(json, new JsonSerializerOptions
         {
-            _httpClient = httpClient;
-        }
+            PropertyNameCaseInsensitive = true
+        });
+    }
 
-        public async Task<ImageRepositoryDto> GetImageRepositoriesASync()
+    public async Task<ImageTagDto> GetImageTagsAsync(string image)
+    {
+        var result = await _httpClient.GetAsync($"{image}/tags/list").ConfigureAwait(false);
+
+        var json = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
+
+        return JsonSerializer.Deserialize<ImageTagDto>(json, new JsonSerializerOptions
         {
-            var result = await _httpClient.GetAsync("_catalog").ConfigureAwait(false);
-
-            var json = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-            return JsonSerializer.Deserialize<ImageRepositoryDto>(json, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-        }
-
-        public async Task<ImageTagDto> GetImageTagsAsync(string image)
-        {
-            var result = await _httpClient.GetAsync($"{image}/tags/list").ConfigureAwait(false);
-
-            var json = await result.Content.ReadAsStringAsync().ConfigureAwait(false);
-
-            return JsonSerializer.Deserialize<ImageTagDto>(json, new JsonSerializerOptions
-            {
-                PropertyNameCaseInsensitive = true
-            });
-        }
+            PropertyNameCaseInsensitive = true
+        });
     }
 }

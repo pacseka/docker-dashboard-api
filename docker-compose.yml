@@ -2,23 +2,19 @@ version: '3.5'
 
 services:
   docker-dashboard-api:
-    image: docker.hvg.hu/hvg/docker-dashboard/docker-dashboard-api:latest
+    image: ${REGISTRY}docker-dashboard-api:${TAG:-latest}
     secrets:
       - dockerregistrysecrets
     environment:
       ASPNETCORE_ENVIRONMENT: 'Development'
-      Settings_SwarmUrl: "http://172.16.197.41:2375"
     ports:
       - "6099:80"
     build:
       context: .
       dockerfile: DockerDashboard.Api/Dockerfile
+    env_file:
+      - ../dashboard.env
 
 secrets:
   dockerregistrysecrets:
     file: ../secrets/docker_registry_pwd.txt
-
-networks:
-  default:
-    external: true
-    name: shared-infrastructure-network

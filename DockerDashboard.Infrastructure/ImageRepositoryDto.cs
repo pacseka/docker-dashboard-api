@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace DockerDashboard.Infrastructure
+namespace DockerDashboard.Infrastructure;
+
+public class ImageRepositoryDto
 {
-    public class ImageRepositoryDto
-    {
-        public List<string> Repositories { get; set; }
-    }
+    public List<string> Repositories { get; set; }
 }

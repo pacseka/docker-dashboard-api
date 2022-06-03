@@ -1,10 +1,10 @@
 ﻿using System.Threading.Tasks;
 
-namespace DockerDashboard.Infrastructure
+namespace DockerDashboard.Infrastructure;
+
+public interface IDockerRegistryProxy
 {
-    public interface IDockerRegistryProxy
-    {
-        Task<ImageRepositoryDto> GetImageRepositoriesASync();
-        Task<ImageTagDto> GetImageTagsAsync(string image);
-    }
+    Task<ImageRepositoryDto> GetImageRepositoriesAsync();
+
+    Task<ImageTagDto> GetImageTagsAsync(string image);
 }

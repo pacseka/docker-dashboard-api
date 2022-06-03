@@ -1,11 +1,14 @@
 ﻿using System;
 
-namespace DockerDashboard.Infrastructure
-{
-    public class AppConfiguration
-    {
-        public Uri DockerRegistryUrl { get; set; }
+namespace DockerDashboard.Infrastructure;
 
-        public string DockerRegistryUser { get; set; }
-    }
+public record AppConfiguration
+{
+    public static string SectionName = "Settings";
+
+    public Uri DockerRegistryUrl { get; init; }
+
+    public string DockerRegistryUser { get; init; }
+
+    public Uri SwarmUrl { get; init; }
 }
