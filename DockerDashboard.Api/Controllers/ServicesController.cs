@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Mime;
@@ -22,10 +22,10 @@ public class ServicesController : ControllerBase
     private readonly ILogger<ServicesController> _logger;
     private readonly Uri _swarmUrl;
 
-    public ServicesController(ILogger<ServicesController> logger, IOptions<AppConfiguration> options)
+    public ServicesController(ILogger<ServicesController> logger, IOptions<SwarmConfiguration> options)
     {
         _logger = logger;
-        _swarmUrl = options.Value.SwarmUrl;
+        _swarmUrl = options.Value.Url;
     }
 
     [HttpGet]
@@ -38,6 +38,7 @@ public class ServicesController : ControllerBase
         {
             using var dockerClientConfiguration =
                 new DockerClientConfiguration(_swarmUrl, defaultTimeout: TimeSpan.FromSeconds(10));
+
             using var dockerClient = dockerClientConfiguration.CreateClient();
             services = (await dockerClient.Swarm.ListServicesAsync().ConfigureAwait(false)).ToList();
         }
@@ -47,7 +48,9 @@ public class ServicesController : ControllerBase
             throw;
         }
 
-        var serviceWithEndpoints = services.Where(x => x.Endpoint.Ports != null).ToList();
+        var serviceWithEndpoints = services.Where(
+            x => x.Endpoint.Ports != null
+                 && (x.Spec.Name.Contains("api") || x.Spec.Name.Contains("service"))).ToList();
 
         var result = new List<SwarmServiceDto>();
 

@@ -1,6 +1,5 @@
-using System;
 using System.Net.Http.Headers;
-using System.Text;
+using DockerDashboard.Api.Configuration;
 using DockerDashboard.Infrastructure;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -34,17 +33,15 @@ public class Startup
             });
         });
 
-        services.Configure<AppConfiguration>(Configuration.GetSection(AppConfiguration.SectionName));
+        services.Configure<SwarmConfiguration>(Configuration.GetSection(SwarmConfiguration.SectionName));
+
+        var registryConfig = Configuration.GetSection(RegistryConfiguration.SectionName).Get<RegistryConfiguration>();
 
         services.AddHttpClient<IDockerRegistryProxy, DockerRegistryProxy>(client =>
         {
-            var dockerPwd = Configuration["dockerregistrysecrets"];
-            var dockerUser = Configuration["Settings:DockerRegistryUser"];
-            var authToken = Encoding.ASCII.GetBytes($"{dockerUser}:{dockerPwd}");
-
-            client.BaseAddress = new Uri(Configuration["Settings:DockerRegistryUrl"]);
+            client.BaseAddress = registryConfig.Url;
             client.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Basic", Convert.ToBase64String(authToken));
+                new AuthenticationHeaderValue("Basic", registryConfig.AuthToken);
         });
 
         services.AddControllers();

@@ -1,13 +1,121 @@
-﻿[*.cs]
+# editorconfig.org
 
-# SA1101: Prefix local calls with this
+# top-most EditorConfig file
+root = true
+
+# Default settings:
+# A newline ending every file
+# Use 4 spaces as indentation
+[*]
+charset = utf-8
+trim_trailing_whitespace = true
+insert_final_newline = true
+indent_style = space
+indent_size = 4
+
+# Xml project files
+[*.{csproj,vcxproj,vcxproj.filters,proj,nativeproj,locproj}]
+indent_size = 2
+
+# Xml files
+[*.{xml,stylecop,resx,ruleset}]
+indent_size = 2
+
+# Xml config files
+[*.{props,targets,config,nuspec}]
+indent_size = 2
+
+# Shell scripts
+[*.sh]
+end_of_line = lf
+[*.{cmd,bat,ps1}]
+end_of_line = crlf
+
+# CA1014: Mark assemblies with CLSCompliant
+dotnet_diagnostic.CA1014.severity = none
+
+# Code files
+[*.{cs,vb}]
+
+dotnet_diagnostic.CA1724.severity = warning
+
+dotnet_diagnostic.SA0001.severity = none
+
 dotnet_diagnostic.SA1101.severity = none
 
-# SA1309: Field names should not begin with underscore
 dotnet_diagnostic.SA1309.severity = none
 
-# Default severity for analyzer diagnostics with category 'StyleCop.CSharp.ReadabilityRules'
-dotnet_analyzer_diagnostic.category-StyleCop.CSharp.ReadabilityRules.severity = none
+dotnet_diagnostic.SA1413.severity = none
 
-# SA1633: File should have header
+dotnet_diagnostic.SA1614.severity = none
+
+dotnet_diagnostic.SA1616.severity = none
+
+dotnet_diagnostic.SA1623.severity = none
+
+dotnet_diagnostic.SA1629.severity = none
+
 dotnet_diagnostic.SA1633.severity = none
+
+dotnet_diagnostic.SA1627.severity = none
+
+dotnet_diagnostic.SA1309.severity = none
+
+dotnet_diagnostic.SA1013.severity = none
+
+# S1075: URIs should not be hardcoded
+dotnet_diagnostic.S1075.severity = warning
+
+dotnet_diagnostic.CA1707.severity = none
+
+# CA1309: Use ordinal string comparison
+dotnet_diagnostic.CA1309.severity = none
+
+# CA1508: Avoid dead conditional code
+dotnet_diagnostic.CA1508.severity = none
+
+# CA1014: Mark assemblies with CLSCompliant
+dotnet_diagnostic.CA1014.severity = none
+
+# CA1062 Controller Action supress
+dotnet_code_quality.CA1062.excluded_type_names_with_derived_types = ControllerBase
+
+# CA1848 Improve logging performance
+dotnet_diagnostic.CA1848.severity = none
+
+# CA2254 logger string format
+dotnet_diagnostic.CA2254.severity = none
+
+# target típusnál csak a baj okozza a new esetén
+dotnet_diagnostic.SA1000.severity = none
+
+# hiányzó usingok is warningoljanak
+dotnet_diagnostic.IDE0005.severity = warning
+
+# SA1313 primary constructore a StyleCop nem képes értelmezni
+dotnet_diagnostic.SA1313.severity = none
+
+# SA1009 uj nyelvi elemeket a StyleCop nem képes értelmezni
+dotnet_diagnostic.SA1009.severity = none
+
+[*.cs]
+csharp_style_namespace_declarations = file_scoped
+
+# target típusnál csak a baj okozza a new esetén
+dotnet_diagnostic.SA1000.severity = none
+
+# konstruktor nem követhet propertyt - olyan style, ami inkabb zavaro mint nem
+dotnet_diagnostic.SA1201.severity = none
+
+# internal class példányosításáról vernyákol, 99% feleslegesen
+dotnet_diagnostic.CA1812.severity = none
+
+# CA1711 EventHandler végződést ér használni
+dotnet_code_quality.ca1711.allowed_suffixes = EventHandler
+
+# CA1305: Specify IFormatProvider - eddig soha semmi probléma nem volt ebből
+dotnet_diagnostic.CA1305.severity = none
+
+# S4457: Parameter validation in "async"/"await" methods should be wrapped - ez valami baromi régi izé
+dotnet_diagnostic.S4457.severity = none
+
